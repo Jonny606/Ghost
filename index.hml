@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ghost Proxy</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: sans-serif; background: #181818; color: #fff; margin: 0; padding: 0;}
+        .container { max-width: 600px; margin: 40px auto; background: #222; padding: 24px; border-radius: 12px; box-shadow: 0 2px 12px #0004;}
+        h1 { margin: 0 0 12px 0; font-weight: 700; }
+        form { display: flex; flex-direction: column; gap: 12px; }
+        input, textarea { font-size: 1rem; border-radius: 6px; border: 1px solid #333; padding: 8px; background: #111; color: #fff;}
+        button { background: #2e89ff; color: #fff; border: none; border-radius: 6px; padding: 10px 20px; cursor: pointer; font-weight: 600;}
+        button:hover { background: #1569c7; }
+        .info { margin-top: 18px; font-size: 0.9em; color: #aaa;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Ghost Proxy Search</h1>
+        <form id="searchForm">
+            <label for="searchQuery">Enter a URL or search query:</label>
+            <input type="text" id="searchQuery" name="searchQuery" placeholder="e.g. https://google.com or cats" required>
+            <button type="submit">Go</button>
+        </form>
+        <div class="info">
+            Requests will be proxied via this site.<br>
+            Make sure your browser supports service workers!
+        </div>
+    </div>
+    <script>
+        // Register service worker for proxying
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log("Service worker registered:", reg))
+                .catch(err => console.error("Service worker registration failed:", err));
+        } else {
+            document.querySelector('.info').textContent = "Service workers not supported in this browser.";
+        }
+
+        // Example form handler: redirect via proxy encoding
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const query = document.getElementById('searchQuery').value.trim();
+            // If it's a URL, route to proxy; if not, search Google
+            let destUrl;
+            if (query.match(/^https?:\/\//)) {
+                destUrl = query;
+            } else {
+                destUrl = 'https://google.com/search?q=' + encodeURIComponent(query);
+            }
+            // Optionally, encode if your proxy expects it
+            window.location.href = '/xjs/js/' + encodeURIComponent(destUrl);
+        });
+    </script>
+</body>
+</html>
